@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>profile page</title>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class='container'>
+        <div class='jumbotron'>
+            <h1>Displaying the profile information</h1>
+
+            <h3>username is: {{user.username}}</h3>
+            <h3>email is: {{user.email}}</h3>
+            <h3>address is: {{profile.address}}</h3>
+            <img src="{{profile.profile_pic.url}}" alt="no image">
+
+        </div>
+
+    </div>
+
+
+{% endblock %}

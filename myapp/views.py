@@ -1,0 +1,78 @@
+from django.shortcuts import render
+from myapp.forms import *
+
+# Create your views here.
+
+from django.core.mail import send_mail
+from django.contrib.auth import authenticate,login,logout
+from django.http import HttpResponse,HttpResponseRedirect
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+
+def home(request):
+    if request.session.get('username'):
+        username=request.session.get('username')
+        return render(request,'home.html',context={'username':username})
+    return render(request,'home.html')
+
+
+def register(request):
+    reg=False
+    userform=UserForm()
+    profileform=ProfileForm()
+    if request.method=="POST" and request.FILES:
+        userform=UserForm(request.POST)
+        profileform=ProfileForm(request.POST,request.FILES)
+        if userform.is_valid() and profileform.is_valid():
+            user=userform.save(commit=False)
+            user.set_password(userform.cleaned_data['password'])
+            user.save()
+
+            profile=profileform.save(commit=False)
+            profile.user=user
+            profile.save()
+            send_mail('registration','Thanks for registering','shruthi.hadagali1216@gmail.com',
+            [user.email],fail_silently=False)
+            
+            reg=True
+            
+        
+    return render(request,'register.html',context={'userform':userform,'profileform':profileform,'reg':reg})
+
+
+def user_login(request):
+    if request.method=="POST":
+        username=request.POST.get('username')
+        password=request.POST.get('password')
+        user=authenticate(username=username,password=password) 
+        if user and user.is_active:
+            login(request,user)
+            request.session['username']=username
+            return render(request,'fb.html')
+        else:
+            return HttpResponse('enter correct details')
+    return render(request,'user_login.html')
+
+
+
+
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('home'))
+
+@login_required
+def profile_info(request):
+    username=request.session.get('username')
+    user=User.objects.get(username=username)
+    profile=Profile.objects.get(user=user)
+    return render(request,'profile.html',context={'user':user,'profile':profile})
+
+def fbprofile(request):
+    return render(request,"fbprofile.html")
+
+
+
+    
+    
